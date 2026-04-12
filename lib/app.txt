@@ -1,0 +1,118 @@
+Serenity Guest House App — Current State
+
+Tech Stack
+
+Flutter (Web + Mobile)
+Riverpod (state management)
+GetX (navigation + snackbars)
+MVVM architecture
+Supabase-ready (mock data, TODO comments for real DB)
+
+
+Architecture
+lib/
+ ├── main.dart                          # RootRouter entry
+ ├── core/
+ │    ├── constants/app_colors.dart     # All colors
+ │    └── theme/app_theme.dart          # Material theme
+ ├── features/
+ │    ├── shared/root_router.dart       # Splash + mode selector
+ │    ├── booking/                      # Customer side
+ │    └── admin/                        # Admin side
+
+Splash Screen
+
+App opens → blue branded screen
+Two buttons: Book a Room → Customer | Admin Panel → Admin
+
+
+Customer Side (4 Screens)
+Screen 1 — Home
+
+Date picker (check-in / check-out)
+Guest counter (+/−, max 8)
+"Search Available Rooms" button with validation
+Room type preview chips (Standard, Deluxe, Suite, Executive)
+
+Screen 2 — Available Rooms
+
+Rooms filtered by guest capacity
+Each card: name, type badge, price/night, total cost, capacity
+"Select this room" button
+
+Screen 3 — Booking Form
+
+Selected room summary tile
+Guest details: name (required), phone (required), email (optional)
+Live price breakdown card (per night × nights = total)
+Form validation with inline errors
+Loading state on submit
+
+Screen 4 — Confirmation
+
+Success icon + "Booking Confirmed"
+Booking reference code (e.g. GH-X7K2MN)
+Full summary: guest, room, dates, nights, total
+Pending status notice (admin approval needed)
+"Make Another Booking" resets state
+
+
+Admin Side (5 Screens)
+Screen 1 — Login
+
+Email + password form
+Show/hide password toggle
+Error handling (wrong credentials)
+Demo hint card
+Credentials: admin@serenity.com / admin123
+
+Screen 2 — Dashboard
+
+4 metric cards: Total Bookings, Pending, Confirmed, Revenue ($)
+Nav tiles → Bookings, Rooms, Calendar
+Logout → back to splash
+
+Screen 3 — Bookings List
+
+Filter tabs: All / Pending / Confirmed / Cancelled
+Each tile: guest initials avatar, name, room, dates, nights, total, status badge
+Inline Confirm / Cancel buttons (with cancel confirmation dialog)
+Tap row → detail bottom sheet
+
+Screen 4 — Rooms CRUD
+
+List all rooms with type, price, capacity
+Edit button → bottom sheet form
+Delete button → confirmation dialog
+FAB → Add new room form
+Form fields: name, price, capacity, type selector
+
+Screen 5 — Calendar
+
+Month grid with prev/next navigation
+Color-coded dots: 🟢 Confirmed · 🟡 Pending
+Tap date → bottom sheet with bookings for that day
+"Upcoming Confirmed Stays" list below calendar (days countdown)
+
+
+State Management
+ProviderManagesbookingProviderCustomer booking flow end-to-endadminAuthProviderAdmin login/logoutadminBookingsProviderAll bookings + filters + metricsadminRoomsProviderRooms list + CRUDappModeProviderCustomer vs Admin mode
+
+What's Mock (Supabase TODO)
+
+Room data (hardcoded list)
+Booking data (hardcoded list)
+Auth (email/password check in ViewModel)
+Booking insert (fake delay)
+Status updates (local state only)
+
+Every TODO is commented in code with exact Supabase query.
+
+What's NOT Built Yet
+
+Supabase integration (real DB)
+SQL schema + RLS policies
+Double-booking constraint (DB level)
+Push notifications
+Payment integration
+Image upload for rooms
