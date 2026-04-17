@@ -57,16 +57,20 @@ class AdminCalendarScreen extends ConsumerWidget {
                   const SizedBox(height: 10),
 
                   // Filter to only confirmed, sorted by check-in
-                  ..._upcomingConfirmed(state.bookings)
-                      .map((b) => Padding(
-                            padding: const EdgeInsets.only(bottom: 10),
-                            child: _UpcomingTile(booking: b),
-                          )),
+                  ..._upcomingConfirmed(state.bookings).map(
+                    (b) => Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: _UpcomingTile(booking: b),
+                    ),
+                  ),
 
                   if (_upcomingConfirmed(state.bookings).isEmpty)
                     const Text(
                       'No upcoming confirmed stays.',
-                      style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                 ],
               ),
@@ -78,9 +82,11 @@ class AdminCalendarScreen extends ConsumerWidget {
   List<AdminBooking> _upcomingConfirmed(List<AdminBooking> all) {
     final now = DateTime.now();
     return all
-        .where((b) =>
-            b.status == BookingStatusType.confirmed &&
-            b.checkInDate.isAfter(now))
+        .where(
+          (b) =>
+              b.status == BookingStatusType.confirmed &&
+              b.checkInDate.isAfter(now),
+        )
         .toList()
       ..sort((a, b) => a.checkInDate.compareTo(b.checkInDate));
   }
@@ -116,9 +122,11 @@ class _DayDetailSheet extends StatelessWidget {
           // Drag handle
           Center(
             child: Container(
-              width: 36, height: 4,
+              width: 36,
+              height: 4,
               decoration: BoxDecoration(
-                color: AppColors.border, borderRadius: BorderRadius.circular(2),
+                color: AppColors.border,
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
@@ -126,38 +134,55 @@ class _DayDetailSheet extends StatelessWidget {
 
           Text(
             '${bookings.length} booking${bookings.length > 1 ? 's' : ''} on this date',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
           ),
           const SizedBox(height: 14),
 
-          ...bookings.map((b) => Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.border, width: 0.5),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(b.customerName,
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                        const SizedBox(height: 2),
-                        Text(b.roomName,
-                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                      ],
+          ...bookings.map(
+            (b) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppColors.border, width: 0.5),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            b.customerName,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            b.roomName,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  StatusBadge(status: b.status),
-                ],
+                    StatusBadge(status: b.status),
+                  ],
+                ),
               ),
             ),
-          )),
+          ),
         ],
       ),
     );
@@ -165,6 +190,85 @@ class _DayDetailSheet extends StatelessWidget {
 }
 
 // ─── Private: Upcoming Confirmed Tile ────────────────────────────────────────
+
+// class _UpcomingTile extends StatelessWidget {
+//   final AdminBooking booking;
+
+//   const _UpcomingTile({required this.booking});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final fmt = DateFormat('MMM d');
+//     // Days until check-in
+//     final daysUntil = booking.checkInDate.difference(DateTime.now()).inDays;
+
+//     return Container(
+//       padding: const EdgeInsets.all(12),
+//       decoration: BoxDecoration(
+//         color: AppColors.surface,
+//         borderRadius: BorderRadius.circular(12),
+//         border: Border.all(color: AppColors.border, width: 0.5),
+//       ),
+//       child: Row(
+//         children: [
+//           // Green check-in countdown bubble
+//           Container(
+//             width: 46,
+//             height: 46,
+//             decoration: BoxDecoration(
+//               color: AppColors.successLight,
+//               borderRadius: BorderRadius.circular(10),
+//             ),
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 Text(
+//                   '$daysUntil',
+//                   style: const TextStyle(
+//                     fontSize: 16,
+//                     fontWeight: FontWeight.w700,
+//                     color: AppColors.success,
+//                   ),
+//                 ),
+//                 const Text(
+//                   'days',
+//                   style: TextStyle(fontSize: 9, color: AppColors.success),
+//                 ),
+//               ],
+//             ),
+//           ),
+//           const SizedBox(width: 12),
+
+//           Expanded(
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 Text(
+//                   booking.customerName,
+//                   style: const TextStyle(
+//                     fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary,
+//                   ),
+//                 ),
+//                 const SizedBox(height: 2),
+//                 Text(
+//                   '${booking.roomName}  ·  ${fmt.format(booking.checkInDate)} – ${fmt.format(booking.checkOutDate)}',
+//                   style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+//                 ),
+//               ],
+//             ),
+//           ),
+
+//           Text(
+//             '\$${booking.totalRevenue.toStringAsFixed(0)}',
+//             style: const TextStyle(
+//               fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.success,
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
 
 class _UpcomingTile extends StatelessWidget {
   final AdminBooking booking;
@@ -174,7 +278,6 @@ class _UpcomingTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fmt = DateFormat('MMM d');
-    // Days until check-in
     final daysUntil = booking.checkInDate.difference(DateTime.now()).inDays;
 
     return Container(
@@ -186,12 +289,12 @@ class _UpcomingTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Green check-in countdown bubble
+          // Eucalyptus countdown bubble
           Container(
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: AppColors.successLight,
+              color: AppColors.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Column(
@@ -202,12 +305,16 @@ class _UpcomingTile extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.success,
+                    color: AppColors.primary,
                   ),
                 ),
                 const Text(
                   'days',
-                  style: TextStyle(fontSize: 9, color: AppColors.success),
+                  style: TextStyle(
+                    fontSize: 9,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -221,22 +328,30 @@ class _UpcomingTile extends StatelessWidget {
                 Text(
                   booking.customerName,
                   style: const TextStyle(
-                    fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   '${booking.roomName}  ·  ${fmt.format(booking.checkInDate)} – ${fmt.format(booking.checkOutDate)}',
-                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
           ),
 
+          // Total in AUD
           Text(
-            '\$${booking.totalRevenue.toStringAsFixed(0)}',
+            'AUD ${booking.totalRevenue.toStringAsFixed(0)}',
             style: const TextStyle(
-              fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.success,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: AppColors.primary,
             ),
           ),
         ],

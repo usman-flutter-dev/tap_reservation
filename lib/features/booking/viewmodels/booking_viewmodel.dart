@@ -1,65 +1,60 @@
 import 'dart:math';
 import 'package:flutter_riverpod/legacy.dart';
-
 import '../models/room_model.dart';
 import '../models/booking_state.dart';
 
-// ─── Mock Data ─────────────────────────────────────────────────────────────────
-// Replace with a Supabase query when connecting the backend:
-//   final rooms = await supabase.from('rooms').select();
-//   return rooms.map((r) => RoomModel.fromMap(r)).toList();
-
-final List<RoomModel> _mockRooms = const [
+// ─── Mock Data: Australian Boutique Selection ───────────────────
+final List<RoomModel> _mockRooms = [
   RoomModel(
     id: '1',
-    name: 'Garden Suite',
-    type: RoomType.suite,
-    pricePerNight: 45,
-    capacity: 2,
+    name: 'The Arbour Guest House',
+    location: 'Byron Bay, NSW',
+    type: RoomType.deluxe,
+    pricePerNight: 185,
+    capacity: 4,
+    rating: 4.9,
+    reviewCount: 38,
+    amenities: ['WiFi', 'Parking', 'Breakfast', 'Pet OK'],
+    description:
+        'A beautifully restored Queenslander nestled among lush hinterland gardens...',
   ),
   RoomModel(
     id: '2',
-    name: 'Family Deluxe',
-    type: RoomType.deluxe,
-    pricePerNight: 32,
-    capacity: 4,
-  ),
-  RoomModel(
-    id: '3',
-    name: 'Standard Double',
+    name: 'Blue Gum Cottage',
+    location: 'Daylesford, VIC',
     type: RoomType.standard,
-    pricePerNight: 21,
+    pricePerNight: 140,
     capacity: 2,
-  ),
-  RoomModel(
-    id: '4',
-    name: 'Executive Twin',
-    type: RoomType.executive,
-    pricePerNight: 58,
-    capacity: 2,
+    rating: 4.7,
+    reviewCount: 22,
+    amenities: ['WiFi', 'Fireplace', 'Breakfast'],
+    description: 'A cozy escape in the heart of the spa country...',
   ),
 ];
 
-// ─── ViewModel ─────────────────────────────────────────────────────────────────
-
-/// The ViewModel in MVVM.
-///
-/// Responsibilities:
-///   - Holds all booking logic (NO UI code here)
-///   - Updates BookingState immutably using copyWith
-///   - Views call methods here, they never touch Supabase directly
-///
-// / Extends StateNotifier<BookingState> from Riverpod:
-///   - [state] is the current BookingState
-///   - Set [state = ...] to trigger a rebuild in all watching widgets
 class BookingViewModel extends StateNotifier<BookingState> {
-  // Start with a default/empty state
   BookingViewModel() : super(const BookingState());
 
-  // ─── Date Selection ───────────────────────────────────────────
-
+  // ─── Date Selection (Fixed for HomeScreen) ─────────────────────
   void setCheckIn(DateTime date) {
     state = state.copyWith(checkInDate: date);
+  }
+
+  /// Resets the booking flow to its initial state
+  void reset() {
+    state = const BookingState();
+  }
+
+  void setGuestName(String name) {
+    state = state.copyWith(guestName: name);
+  }
+
+  void setGuestPhone(String phone) {
+    state = state.copyWith(guestPhone: phone);
+  }
+
+  void setGuestEmail(String email) {
+    state = state.copyWith(guestEmail: email);
   }
 
   void setCheckOut(DateTime date) {
@@ -67,113 +62,45 @@ class BookingViewModel extends StateNotifier<BookingState> {
   }
 
   // ─── Guest Count ──────────────────────────────────────────────
-
   void incrementGuests() {
-    // Guard: never go above 8 guests
-    if (state.guests < 8) {
+    if (state.guests < 4) {
       state = state.copyWith(guests: state.guests + 1);
     }
   }
 
   void decrementGuests() {
-    // Guard: minimum 1 guest
     if (state.guests > 1) {
       state = state.copyWith(guests: state.guests - 1);
     }
   }
 
-  // ─── Room Availability ────────────────────────────────────────
-
-  /// Returns rooms whose capacity fits the selected guest count.
-  ///
-  /// Production replacement:
-  ///   final rows = await supabase
-  ///     .from('bookings')
-  ///     .select('room_id')
-  ///     .eq('status', 'confirmed')
-  ///     .lte('check_in_date', checkOut)
-  ///     .gte('check_out_date', checkIn);
-  ///   final bookedIds = rows.map((r) => r['room_id']).toSet();
-  ///   return allRooms.where((r) => !bookedIds.contains(r.id)).toList();
+  // ─── Business Logic ───────────────────────────────────────────
   List<RoomModel> getAvailableRooms() {
     return _mockRooms.where((r) => r.capacity >= state.guests).toList();
   }
 
-  // ─── Room Selection ───────────────────────────────────────────
-
-  /// Called when user taps "Select this room" on Screen 2
   void selectRoom(RoomModel room) {
     state = state.copyWith(selectedRoom: room);
   }
 
-  // ─── Form Input ───────────────────────────────────────────────
-
-  /// Each method is called via onChanged on the TextFormFields in Screen 3
-  void setGuestName(String v) => state = state.copyWith(guestName: v);
-  void setGuestPhone(String v) => state = state.copyWith(guestPhone: v);
-  void setGuestEmail(String v) => state = state.copyWith(guestEmail: v);
-
-  // ─── Booking Submission ───────────────────────────────────────
-
-  /// Submits the booking and sets status to confirmed.
-  ///
-  /// Production replacement — swap the Future.delayed with:
-  ///   await supabase.from('bookings').insert({
-  ///     'room_id': state.selectedRoom!.id,
-  ///     'customer_name': state.guestName,
-  ///     'customer_phone': state.guestPhone,
-  ///     'customer_email': state.guestEmail,
-  ///     'check_in_date': state.checkInDate!.toIso8601String(),
-  ///     'check_out_date': state.checkOutDate!.toIso8601String(),
-  ///     'status': 'pending',
-  ///   });
   Future<void> confirmBooking() async {
-    // Show loading spinner in the UI
     state = state.copyWith(status: BookingStatus.loading);
-
     try {
-      // TODO: Replace with real Supabase insert
-      await Future.delayed(const Duration(milliseconds: 900));
-
-      final ref = 'GH-${_generateRef()}';
-
+      await Future.delayed(const Duration(milliseconds: 1200));
       state = state.copyWith(
         status: BookingStatus.confirmed,
-        bookingReference: ref,
+        bookingReference: 'AU-${_generateRef()}',
       );
     } catch (e) {
-      // If the DB constraint fires (double-booking), land here
-      state = state.copyWith(
-        status: BookingStatus.error,
-        errorMessage: 'Room is no longer available. Please try another.',
-      );
+      state = state.copyWith(status: BookingStatus.error);
     }
   }
 
-  // ─── Reset ────────────────────────────────────────────────────
-
-  /// Clears all state — called after user taps "Make Another Booking"
-  void reset() {
-    state = const BookingState();
-  }
-
-  // ─── Private Helpers ─────────────────────────────────────────
-
-  /// Generates a random 6-character alphanumeric reference code
   String _generateRef() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    final rand = Random.secure();
-    return List.generate(6, (_) => chars[rand.nextInt(chars.length)]).join();
+    return Random().nextInt(999999).toString().padLeft(6, '0');
   }
 }
 
-// ─── Riverpod Provider ────────────────────────────────────────────────────────
-
-/// The global provider. Import this in any widget that needs booking state.
-///
-/// Usage in a widget:
-///   final state = ref.watch(bookingProvider);         // rebuilds on change
-///   final vm    = ref.read(bookingProvider.notifier); // call methods only
 final bookingProvider = StateNotifierProvider<BookingViewModel, BookingState>(
   (ref) => BookingViewModel(),
 );

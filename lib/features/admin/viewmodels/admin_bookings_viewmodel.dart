@@ -227,36 +227,61 @@ class AdminRoomsViewModel extends StateNotifier<AdminRoomsState> {
   Future<void> loadRooms() async {
     state = state.copyWith(isLoading: true);
     await Future.delayed(const Duration(milliseconds: 400));
+
     state = state.copyWith(
       isLoading: false,
       rooms: const [
         RoomModel(
           id: '1',
-          name: 'Garden Suite',
+          name: 'The Arbour Guest House',
+          location: 'Byron Bay, NSW',
           type: RoomType.suite,
-          pricePerNight: 45,
-          capacity: 2,
+          pricePerNight: 185,
+          capacity: 4,
+          rating: 4.9,
+          reviewCount: 38,
+          amenities: ['WiFi', 'Parking', 'Breakfast', 'Pet OK'],
+          description:
+              'A beautifully restored Queenslander nestled among lush hinterland gardens.',
         ),
         RoomModel(
           id: '2',
-          name: 'Family Deluxe',
+          name: 'Blue Gum Cottage',
+          location: 'Daylesford, VIC',
           type: RoomType.deluxe,
-          pricePerNight: 32,
-          capacity: 4,
+          pricePerNight: 140,
+          capacity: 2,
+          rating: 4.7,
+          reviewCount: 22,
+          amenities: ['WiFi', 'Fireplace', 'Kitchen'],
+          description:
+              'A cozy escape in the heart of the spa country, surrounded by tall gums.',
         ),
         RoomModel(
           id: '3',
           name: 'Standard Double',
+          location: 'Noosa, QLD',
           type: RoomType.standard,
-          pricePerNight: 21,
+          pricePerNight: 95,
           capacity: 2,
+          rating: 4.5,
+          reviewCount: 15,
+          amenities: ['WiFi', 'Pool Access'],
+          description:
+              'Clean, modern coastal living within walking distance to the beach.',
         ),
         RoomModel(
           id: '4',
           name: 'Executive Twin',
+          location: 'Sydney, NSW',
           type: RoomType.executive,
-          pricePerNight: 58,
+          pricePerNight: 210,
           capacity: 2,
+          rating: 4.8,
+          reviewCount: 54,
+          amenities: ['WiFi', 'Workspace', 'Gym'],
+          description:
+              'Luxury twin suite with views of the harbor and premium city access.',
         ),
       ],
     );
